@@ -516,6 +516,7 @@ function parseInteger(value: unknown): bigint | undefined {
   return undefined;
 }
 
+export { BATCH_INVOCATION_LIMIT } from "./types";
 export { analyzeContractStorage } from "./storageAnalysis";
 export type {
   ContractStorageEntry,

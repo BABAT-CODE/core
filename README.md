@@ -363,6 +363,36 @@ if (diff.status === "ok") {
 
 See [docs/contract-snapshots.md](docs/contract-snapshots.md) for full retention and redaction guidance.
 
+#### Contract invocation batching
+
+`invokeBatchContracts` runs multiple calls and captures per-invocation outcomes:
+
+```ts
+import { invokeBatchContracts, BATCH_INVOCATION_LIMIT } from "sorokit-core";
+
+const result = await invokeBatchContracts(rpcUrl, networkConfig, horizonUrl, [
+  { contractId, method: "transfer", args, publicKey },
+  { contractId, method: "mint", args: mintArgs, publicKey },
+], signFn);
+
+if (result.status === "error") {
+  // Batch was rejected (e.g. exceeded BATCH_INVOCATION_LIMIT = 20)
+  console.error(result.error.message);
+} else {
+  for (const item of result.data) {
+    // Each item has status "ok" | "error" — partial success is normal
+    if (item.status === "error") {
+      console.error(`${item.contractId}.${item.method}: ${item.error.message}`);
+    }
+  }
+}
+```
+
+**No cross-invocation atomicity** — each call is a separate transaction. Split
+batches larger than `BATCH_INVOCATION_LIMIT` (20) into chunks.
+
+See [docs/contract-invocation-batching.md](docs/contract-invocation-batching.md) for full details.
+
 #### Contract deployment
 
 `buildContractDeploy` validates its configuration before any network call, so a
